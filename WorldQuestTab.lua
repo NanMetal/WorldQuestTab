@@ -1463,7 +1463,7 @@ function WQT_ScrollListMixin:FilterQuestList()
 				passed = true;
 			else
 				-- Official filtering
-				passed = BlizFiltering and WorldMap_DoesWorldQuestInfoPassFilters(questInfo) or not BlizFiltering;
+				passed = BlizFiltering and C_QuestLog.IsWorldQuest(questInfo.questId) or not BlizFiltering;
 				-- Add-on filters
 				if (passed and WQTFiltering) then
 					passed = WQT:PassesAllFilters(questInfo);
@@ -1479,7 +1479,7 @@ function WQT_ScrollListMixin:FilterQuestList()
 		
 		-- In debug, still filter, but show everything.
 		if (not questInfo.passedFilter and addon.debug) then
-				table.insert(self.questListDisplay, questInfo);
+			table.insert(self.questListDisplay, questInfo);
 		end
 	end
 	
@@ -1831,7 +1831,7 @@ function WQT_CoreMixin:HideOfficialMapPins()
 		end
 		
 		-- Bonus world quests
-		WQT_Utils:ItterateAllBonusObjectivePins(function(pin) self:TryHideOfficialMapPin(pin); end);
+		-- WQT_Utils:ItterateAllBonusObjectivePins(function(pin) self:TryHideOfficialMapPin(pin); end);
 	end
 end
 

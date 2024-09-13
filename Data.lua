@@ -984,7 +984,7 @@ _V["SETTING_LIST"] = {
 			,["getValueFunc"] = function() return WQT.settings.pin.eliteRing end
 			,["isDisabled"] = function() return WQT.settings.pin.disablePoI end
 			}
-	,{["template"] = "WQT_SettingSliderTemplate", ["categoryID"] = "MAPPINS", ["label"] = _L["PIN_SCALE"], ["tooltip"] = _L["PIN_SCALE_TT"], ["min"] = 0.8, ["max"] = 1.5, ["valueStep"] = 0.01
+	,{["template"] = "WQT_SettingSliderTemplate", ["categoryID"] = "MAPPINS", ["label"] = _L["PIN_SCALE"], ["tooltip"] = _L["PIN_SCALE_TT"], ["min"] = 0.6, ["max"] = 1.5, ["valueStep"] = 0.01
 			, ["valueChangedFunc"] = function(value) 
 				WQT.settings.pin.scale = value;
 				WQT_WorldQuestFrame.pinDataProvider:RefreshAllData();
