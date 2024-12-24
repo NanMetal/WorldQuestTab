@@ -814,7 +814,7 @@ _V["SETTING_LIST"] = {
 			end
 			,["getValueFunc"] = function() return WQT.settings.list.alwaysAllQuests end
 			}	
-	,{["template"] = "WQT_SettingCheckboxTemplate", ["categoryID"] = "GENERAL", ["label"] = _L["INCLUDE_DAILIES"], ["tooltip"] = _L["INCLUDE_DAILIES_TT"]
+	,{["template"] = "WQT_SettingCheckboxTemplate", ["categoryID"] = "GENERAL_SHADOWLANDS", ["label"] = _L["INCLUDE_DAILIES"], ["tooltip"] = _L["INCLUDE_DAILIES_TT"]
 			, ["valueChangedFunc"] = function(value) 
 				WQT.settings.list.includeDaily = value;
 				local mapAreaID = WorldMapFrame.mapID;
