@@ -1476,7 +1476,7 @@ function WQT_ScrollListMixin:FilterQuestList()
 				passed = true;
 			else
 				-- Official filtering
-				if QuestUtils_IsQuestWorldQuest(questInfo.questID) or QuestUtils_IsQuestBonusObjective(questInfo.questID) then
+				if (questInfo.questID < 70000) or QuestUtils_IsQuestWorldQuest(questInfo.questID) or QuestUtils_IsQuestBonusObjective(questInfo.questID) then
 					passed = BlizFiltering and WorldMap_DoesWorldQuestInfoPassFilters(questInfo) or not BlizFiltering;
 					-- Add-on filters
 					if (passed and WQTFiltering) then
