@@ -2010,18 +2010,14 @@ function WQT_CoreMixin:OnLoad()
 	
 	-- Clicking the map legend, hide & change to quest tab
 	EventRegistry:RegisterCallback("ShowMapLegend", function()
-		self.isMapLegend = true;
+		self.isMapLegendVisible = true;
 		self:SelectTab(WQT_TabNormal);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
-		WQT_TabNormal:Hide();
-		WQT_TabWorld:Hide();
-		QuestMapFrame.QuestsFrame.SearchBox:Hide(); -- ???
 	end);
 	EventRegistry:RegisterCallback("HideMapLegend", function()
-		self.isMapLegend = false;
+		self.isMapLegendVisible = false;
 		self:SelectTab(WQT_TabNormal);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
-		QuestMapFrame.QuestsFrame.SearchBox:Show();
 	end);
 	
 	-- Update when opening the map
@@ -2634,10 +2630,12 @@ function WQT_CoreMixin:SelectTab(tab)
 		WQT_WorldQuestFrame.pinDataProvider:RefreshAllData();
 	end
 	self.selectedTab = tab;
-	if not self.isMapLegend then
-		WQT_TabNormal:Show();
-		WQT_TabWorld:Show();
-	end
+
+	-- Hide quest log search box if the map legend is shown
+	QuestMapFrame.QuestsFrame.SearchBox:SetShown(not self.isMapLegendVisible);
+
+	WQT_TabNormal:SetShown(not self.isMapLegendVisible);
+	WQT_TabWorld:SetShown(not self.isMapLegendVisible);
 	WQT_TabNormal:SetFrameLevel(2);
 	WQT_TabWorld:SetFrameLevel(2);
 	WQT_TabNormal.Hider:Show();
@@ -2659,7 +2657,7 @@ function WQT_CoreMixin:SelectTab(tab)
 		WQT_TabNormal.Highlight:Show();
 		WQT_TabNormal.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.78906250, 0.95703125);
 		WQT_TabWorld.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.61328125, 0.78125000);
-		QuestScrollFrame:Show();
+		QuestScrollFrame:SetShown(not self.isMapLegendVisible); -- Only show if the map legend is not visible
 	elseif id == 2 then
 		-- WQT
 		WQT_TabWorld:SetFrameLevel(10);

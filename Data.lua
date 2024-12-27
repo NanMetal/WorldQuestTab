@@ -1629,6 +1629,12 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.0.7.2",
+			["fixes"] = {
+				"Fixed messy Shadowlands dailies.",
+				"Fixed overlapping of the map legend.",
+			},
+		},
 		{["version"] = "11.0.7.1",
 			["new"] = {
 				"Added Siren Isle.",
