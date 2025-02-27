@@ -169,11 +169,11 @@ function WQT_ContainerButtonMixin:SetSelected(isSelected)
 		if (self.isSelected) then
 			self.container:Show();
 			self.Glow:SetShown(true);
-			WQT_WorldQuestFrame:SelectTab(WQT_TabWorld);
+			WQT_WorldQuestFrame:SelectTab(QuestLogDisplayMode.WorldQuests);
 		else
 			self.container:Hide();
 			self.Glow:SetShown(false);
-			WQT_WorldQuestFrame:SelectTab(WQT_TabNormal);
+			WQT_WorldQuestFrame:SelectTab(QuestLogDisplayMode.Quests);
 		end
 	end
 end

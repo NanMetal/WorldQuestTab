@@ -150,7 +150,7 @@
 	</Frame>
 	 
 	<Button name="WQT_QuestTemplate" mixin="WQT_ListButtonMixin" virtual="true" registerForClicks="LeftButtonUp, RightButtonUp" >
-		<Size x="302" y="32"/>
+		<Size x="302" y="37"/>
 		<Frames>
 			<Frame parentKey="Type" hidden="true">
 				<Size x="28" y="28" />
@@ -288,26 +288,11 @@
 				</Anchors>
 				<Layers>
 					<Layer level="ARTWORK">
-						<Texture parentKey="hlLeft" file="Interface\PETBATTLES\PETJOURNAL">
+						<Texture parentKey="Background" atlas="event-scheduler-event-card-hover">
 							<Anchors>
-								<Anchor point="TOPLEFT"/>
-								<Anchor point="BOTTOMRIGHT" relativePoint="BOTTOMLEFT" x="30"/>
+								<Anchor point="TOPLEFT" y="-1"/>
+								<Anchor point="BOTTOMRIGHT" y="1"/>
 							</Anchors>
-							<TexCoords left="0.498046875" right="0.591796875" top="0.1748046875" bottom="0.2197265625"/>
-						</Texture>
-						<Texture parentKey="hlRight" file="Interface\PETBATTLES\PETJOURNAL">
-							<Anchors>
-								<Anchor point="TOPRIGHT"/>
-								<Anchor point="BOTTOMLEFT" relativePoint="BOTTOMRIGHT" x="-30"/>
-							</Anchors>
-							<TexCoords left="0.814453125" right="0.90625" top="0.1748046875" bottom="0.2197265625"/>
-						</Texture>
-						<Texture parentKey="hlCenter" file="Interface\PETBATTLES\PETJOURNAL">
-							<Anchors>
-								<Anchor point="TOPLEFT" relativeKey="$parent.hlLeft" relativePoint="TOPRIGHT"/>
-								<Anchor point="BOTTOMRIGHT" relativeKey="$parent.hlRight" relativePoint="BOTTOMLEFT"/>
-							</Anchors>
-							<TexCoords left="0.591796875" right="0.814453125" top="0.1748046875" bottom="0.2197265625"/>
 						</Texture>
 					</Layer>
 				</Layers>
@@ -316,14 +301,6 @@
 		</Frames>
 		
 		<Layers>
-			<Layer level="BACKGROUND">
-				<Texture parentKey="Bg" file="Interface\QUESTFRAME\UI-QuestLogTitleHighlight" alpha="0.1" alphaMode="ADD">
-					<Anchors>
-						<Anchor point="TOPLEFT" y="-1"/>
-						<Anchor point="BOTTOMRIGHT" y="1"/>
-					</Anchors>
-				</Texture>
-			</Layer>
 			<Layer level="ARTWORK">
 				<Texture parentKey="WarbandBonus" alpha="1" atlas="warbands-icon" useAtlasSize="true" scale="0.9" hidden="true">
 					<Anchors>
@@ -331,26 +308,26 @@
 					</Anchors>
 					<Color r="0.8" g="0.8" b="0.8"/>
 				</Texture>
-				<FontString parentKey="Title" inherits="GameFontNormalLeft" maxLines="1" justifyV="BOTTOM">
+				<FontString parentKey="Title" inherits="GameFontHighlight" maxLines="1" justifyH="LEFT">
+					<Size y="16"/>
 					<Anchors>
 						<Anchor point="BOTTOMLEFT" relativeKey="$parent.Faction" relativePoint="RIGHT" x="5"/>
 						<Anchor point="RIGHT" relativeKey="$parent.WarbandBonus" relativePoint="LEFT" x="-5"/>
 					</Anchors>
-					<Color r="1" g="0.82" b="0" a="1"/>
+					<Color color="EVENT_SCHEDULER_NAME_COLOR"/>
 				</FontString>
 				<FontString parentKey="Time" inherits="GameFontNormalSmall" maxLines="1" justifyH="LEFT">
-					<Size x="70" y="0"/>
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" x="5" y="-2"/>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Title" relativePoint="BOTTOMLEFT" y="-2"/>
 					</Anchors>
-					<Color r="0.75" g="0.61" b="0"/>
+					<Color r="0.75" g="0.61" b="0" a="0.8"/>
 				</FontString>
 				<FontString parentKey="Extra" inherits="GameFontNormalSmall" maxLines="1" justifyH="LEFT">
 					<Anchors>
-						<Anchor point="TOPLEFT" relativeKey="$parent.Time" relativePoint="TOPRIGHT" x="6"/>
+						<Anchor point="TOPLEFT" relativeKey="$parent.Time" relativePoint="TOPRIGHT" x="0"/>
 						<Anchor point="RIGHT" relativeKey="$parent.Rewards" relativePoint="LEFT" x="-5"/>
 					</Anchors>
-					<Color r="0.7" g="0.7" b="0.7"/>
+					<Color color="EVENT_SCHEDULER_LOCATION_COLOR"/>
 				</FontString>
 			</Layer>
 		</Layers>
@@ -840,7 +817,7 @@
 			
 			<DropdownButton name="$parentSortDropdown" parentKey="SortDropdown" inherits="WowStyle1DropdownTemplate">
 				<Anchors>
-					<Anchor point="RIGHT" relativePoint="LEFT" relativeKey="$parent.FilterButton" x="-8" y="2"/>
+					<Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="5" y="-7"/>
 				</Anchors>
 			</DropdownButton>
 			
@@ -850,34 +827,20 @@
 		</Scripts>
 	</Frame>
 	
-	<Button name="WQT_TabNormal" inherits="WQT_TabTemplate" parent="QuestMapFrame" enableMouse="true" id="1">
+	<Button name="WQT_TabWorld" inherits="QuestLogTabButtonTemplate" parent="QuestMapFrame" enableMouse="true" id="4">
+		<KeyValues>
+			<KeyValue key="displayMode" value="4" type="number"/>
+			<KeyValue key="activeAtlas" value="Worldquest-icon" type="string"/>
+			<KeyValue key="inactiveAtlas" value="Worldquest-icon" type="string"/>
+			<KeyValue key="tooltipText" value="TRACKER_HEADER_WORLD_QUESTS" type="global"/>
+		</KeyValues>
 		<Anchors>
-			<Anchor point="BOTTOMLEFT" relativePoint="TOPLEFT" x="3" y="-26"/>
+			<Anchor point="TOP" relativeKey="$parent.MapLegendTab" relativePoint="BOTTOM" x="0" y="-3"/>
 		</Anchors>
 		<Scripts>
-			<OnLoad>
-				--self:SetFrameLevel(self:GetParent():GetFrameLevel());
-				self:SetToplevel(true);
-				self.Icon:SetTexture("Interface/MINIMAP/TRACKING/OBJECTICONS");
-				self.Icon:SetTexCoord(0.125, 0.25, 0.5, 1);
-				self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-				self.tooltipText = QUEST_LOG;
-			</OnLoad>
-		</Scripts>
-	</Button>
-	
-	<Button name="WQT_TabWorld" inherits="WQT_TabTemplate" parent="QuestMapFrame" enableMouse="true" id="2">
-		<Anchors>
-			<Anchor point="LEFT" relativeTo="WQT_TabNormal" relativePoint="RIGHT" x="4"/>
-		</Anchors>
-		<Scripts>
-			<OnLoad>
-				--self:SetFrameLevel(self:GetParent():GetFrameLevel());
-				self:SetToplevel(true);
-				self.Icon:SetTexture("Interface/Worldmap/UI-World-Icon");
-				self:RegisterForClicks("LeftButtonUp", "RightButtonUp");
-				self.tooltipText = TRACKER_HEADER_WORLD_QUESTS;
-			</OnLoad>
+			<OnClick>
+				WQT_WorldQuestFrame:SelectTab(self.displayMode);
+			</OnClick>
 		</Scripts>
 	</Button>
 	

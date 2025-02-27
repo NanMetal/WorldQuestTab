@@ -132,6 +132,9 @@ WQT_CONTAINER_DRAG = _L["CONTAINER_DRAG"];
 WQT_CONTAINER_DRAG_TT = _L["CONTAINER_DRAG_TT"];
 WQT_FULLSCREEN_BUTTON_TT = _L["WQT_FULLSCREEN_BUTTON_TT"];
 
+WQT_DISPLAYMODE = 4;
+QuestLogDisplayMode.WorldQuests = WQT_DISPLAYMODE;
+
 ------------------------
 -- LOCAL
 ------------------------
@@ -157,6 +160,7 @@ local WQT_WAR_WITHIN = {
 	[2339] =  {["x"] = 0.73, ["y"] = 0.25}, -- Dornogal
 	-- For some reason the Siren Isle is inside the Isle of Dorn map...
 	[2369] =  {["x"] = 0.76, ["y"] = 0.21}, -- Siren Isle
+	[2374] =  {["x"] = 0.82, ["y"] = 0.73}, -- Undermine
 }
 local WQT_DRAGONFLIGHT = {
 	[2026] =  {["x"] = 0.66, ["y"] = 0.09}, -- Forbidden Reach (dracthyr start)
@@ -467,7 +471,7 @@ _V["WQT_BLUE_FONT_COLOR"] = CreateColor(0.2, 0.60, 1);
 _V["WQT_PURPLE_FONT_COLOR"] = CreateColor(0.73, 0.33, 0.82);
 
 
-_V["WQT_BOUNTYBOARD_OVERLAYID"] = 5;
+_V["WQT_BOUNTYBOARD_OVERLAYID"] = 4;
 _V["WQT_TYPE_BONUSOBJECTIVE"] = 99;
 _V["WQT_LISTITTEM_HEIGHT"] = 32;
 
@@ -1487,6 +1491,11 @@ _V["WQT_FACTION_DATA"] = {
 	,[2605] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5862762 } -- The General
 	,[2607] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5862763 } -- The Vizier
 	,[2640] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5453546 } -- Brann Bronzebeard
+	,[2653] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- The Cartels of Undermine
+	,[2671] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Venture Company
+	,[2673] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Bilgewater Cartel
+	,[2675] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Blackwater Cartel
+	,[2677] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Steamwheedle Cartel
 }
 
 -- Add localized faction names
@@ -1629,6 +1638,20 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.1.0",
+			["intro"] = { "Update for 11.1.0" },
+			["new"] = {
+				"Added Undermine.",
+			},
+			["fixes"] = {
+				"Fixed wrong BountyBoard overlay id.",
+				"Fixed alot of errors regarding old tabs and random stuff.",
+			},
+			["changes"] = {
+				"Now the WorldQuest tab is next to the new UI tabs.",
+				"Changed some colors of the world quests list.",
+			},
+		},
 		{["version"] = "11.0.7.2",
 			["fixes"] = {
 				"Fixed messy Shadowlands dailies.",

@@ -902,10 +902,6 @@ function WQT:OnInitialize()
 end
 
 function WQT:OnEnable()
-	WQT_TabNormal.Highlight:Show();
-	WQT_TabNormal.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.78906250, 0.95703125);
-	WQT_TabWorld.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.61328125, 0.78125000);
-	
 	-- load WorldQuestTabUtilities
 	--if (WQT.settings.general.loadUtilities and C_AddOns.GetAddOnEnableState(_playerName, "WorldQuestTabUtilities") > 0 and not C_AddOns.IsAddOnLoaded("WorldQuestTabUtilities")) then
 	--	LoadAddOn("WorldQuestTabUtilities");
@@ -930,7 +926,7 @@ function WQT:OnEnable()
 	end
 	
 	-- Show default tab depending on setting
-	WQT_WorldQuestFrame:SelectTab(self.settings.general.defaultTab and WQT_TabWorld or WQT_TabNormal);
+	WQT_WorldQuestFrame:SelectTab(self.settings.general.defaultTab and QuestLogDisplayMode.WorldQuests or QuestLogDisplayMode.Quests);
 	WQT_WorldQuestFrame.tabBeforeAnchor = WQT_WorldQuestFrame.selectedTab;
 	
 	-- Show quest log counter
@@ -1169,12 +1165,24 @@ function WQT_ListButtonMixin:UpdateTime()
 	if (self.questInfo:IsDisliked() or (not WQT.settings.list.colorTime and category ~= _V["TIME_REMAINING_CATEGORY"].critical)) then
 		color = _V["WQT_WHITE_FONT_COLOR"];
 	end
-	self.Time:SetTextColor(color.r, color.g, color.b, 1);
+
+	local colorA = 0.8;
+	if self.Highlight:IsVisible() then
+		colorA = 1;
+	end
+
+	self.Time:SetTextColor(color.r, color.g, color.b, colorA);
 	self.Time:SetText(timeString);
 end
 
 function WQT_ListButtonMixin:OnLeave()
 	self.Highlight:Hide();
+	self.Title:SetTextColor(EVENT_SCHEDULER_NAME_COLOR:GetRGB());
+	self.Extra:SetTextColor(EVENT_SCHEDULER_LOCATION_COLOR:GetRGB());
+
+	local colorR, colorG, colorB, colorA = self.Time:GetTextColor();
+	self.Time:SetTextColor(colorR, colorG, colorB, 0.8);
+
 	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, false);
 	WQT_WorldQuestFrame:HideWorldmapHighlight();
 	GameTooltip:Hide();
@@ -1190,6 +1198,11 @@ function WQT_ListButtonMixin:OnEnter()
 	local questInfo = self.questInfo;
 	if (not questInfo) then return; end
 	self.Highlight:Show();
+	self.Title:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB());
+	self.Extra:SetTextColor(NORMAL_FONT_COLOR:GetRGB());
+
+	local colorR, colorG, colorB, colorA = self.Time:GetTextColor();
+	self.Time:SetTextColor(colorR, colorG, colorB, 1);
 	
 	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, true);
 	WQT_WorldQuestFrame:ShowWorldmapHighlight(questInfo.questID);
@@ -1299,7 +1312,7 @@ function WQT_ListButtonMixin:Update(questInfo, shouldShowZone)
 	-- Time and zone
 	local extraSpace = WQT.settings.list.factionIcon and 0 or 14;
 	extraSpace = extraSpace + (WQT.settings.list.typeIcon and 0 or 14);
-	local timeWidth = extraSpace + (WQT.settings.list.fullTime and 70 or 60);
+	local timeWidth = extraSpace + (WQT.settings.list.fullTime and 65 or 55);
 	local zoneWidth = extraSpace + (WQT.settings.list.fullTime and 80 or 90);
 	if (not shouldShowZone) then
 		timeWidth = timeWidth + zoneWidth;
@@ -1323,7 +1336,19 @@ function WQT_ListButtonMixin:Update(questInfo, shouldShowZone)
 	-- Highlight
 	local showHighLight = self:IsMouseOver() or self.Faction:IsMouseOver() or (WQT_QuestScrollFrame.PoIHoverId and WQT_QuestScrollFrame.PoIHoverId == questInfo.questID)
 	self.Highlight:SetShown(showHighLight);
-			
+	local titleColor = EVENT_SCHEDULER_NAME_COLOR;
+	local extraColor = EVENT_SCHEDULER_LOCATION_COLOR;
+	local colorA = 0.8;
+	if showHighLight then
+		titleColor = HIGHLIGHT_FONT_COLOR;
+		extraColor = NORMAL_FONT_COLOR;
+		colorA = 1;
+	end
+	self.Title:SetTextColor(titleColor:GetRGB());
+	self.Extra:SetTextColor(extraColor:GetRGB());
+	local colorR, colorG, colorB = self.Time:GetTextColor();
+	self.Time:SetTextColor(colorR, colorG, colorB, colorA);
+
 	-- Faction icon
 	if (WQT.settings.list.factionIcon) then
 		self.Faction:Show();
@@ -1557,7 +1582,7 @@ function WQT_ScrollListMixin:DisplayQuestList()
 	-- Now start from zero
 	WQT_QuestScrollFrame.ScrollBar:ScrollToBegin();
 	
-	local shouldShowZone = WQT.settings.list.showZone and (WQT.settings.list.alwaysAllQuests or (mapInfo and (mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World))); 
+	local shouldShowZone = true;--WQT.settings.list.showZone and (WQT.settings.list.alwaysAllQuests or (mapInfo and (mapInfo.mapType == Enum.UIMapType.Continent or mapInfo.mapType == Enum.UIMapType.World))); 
 
 	self:UpdateFilterDisplay();
 	
@@ -1989,35 +2014,40 @@ function WQT_CoreMixin:OnLoad()
 	
 	-- Show quest tab when leaving quest details
 	hooksecurefunc("QuestMapFrame_ReturnFromQuestDetails", function()
-			self:SelectTab(WQT_TabNormal);
+			self:SelectTab(QuestLogDisplayMode.Quests);
 		end)
 	-- When untracking a quest with details open
 	hooksecurefunc("QuestMapFrame_CloseQuestDetails", function()
 			if (self.selectedTab == WQT_TabDetails) then
-				self:SelectTab(WQT_TabNormal);
+				self:SelectTab(QuestLogDisplayMode.Quests);
 			end
 		end)
 		
-	
+
 	-- World map
 	-- If we were reading details when we switch maps, change back to normal quests
 	EventRegistry:RegisterCallback("MapCanvas.MapSet", function() 
 			-- Now we do it modern way.
 			if (self.selectedTab == WQT_TabDetails) then
-				self:SelectTab(WQT_TabNormal); 
+				self:SelectTab(QuestLogDisplayMode.Quests); 
 			end
 		end);
 	
 	-- Clicking the map legend, hide & change to quest tab
 	EventRegistry:RegisterCallback("ShowMapLegend", function()
 		self.isMapLegendVisible = true;
-		self:SelectTab(WQT_TabNormal);
+		self:SelectTab(QuestLogDisplayMode.Quests);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
 	end);
 	EventRegistry:RegisterCallback("HideMapLegend", function()
 		self.isMapLegendVisible = false;
-		self:SelectTab(WQT_TabNormal);
+		self:SelectTab(QuestLogDisplayMode.Quests);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
+	end);
+
+	-- Update when clicking the new map tabs
+	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function(_, displayMode)
+		self:SelectTab(displayMode);
 	end);
 	
 	-- Update when opening the map
@@ -2025,13 +2055,6 @@ function WQT_CoreMixin:OnLoad()
 			local mapAreaID = WorldMapFrame.mapID;
 			self.dataProvider:LoadQuestsInZone(mapAreaID);
 			self.ScrollFrame:UpdateQuestList();
-			
-			-- Prevent opening empty quest details
-			local currentTab = self.selectedTab;
-			if (currentTab == WQT_TabDetails and not QuestMapFrame.DetailsFrame.questID) then
-				currentTab = WQT_TabNormal;
-			end
-			self:SelectTab(currentTab); 
 			
 			-- If emissaryOnly was automaticaly set, and there's none in the current list, turn it off again.
 			if (WQT_WorldQuestFrame.autoEmissaryId and not WQT_WorldQuestFrame.dataProvider:ListContainsEmissary()) then
@@ -2051,21 +2074,6 @@ function WQT_CoreMixin:OnLoad()
 			self:HideOverlayFrame()
 			wipe(WQT_QuestScrollFrame.questListDisplay);
 			self.dataProvider:ClearData();
-		end)
-
-	-- Fix tabs when official quests are shown
-	QuestScrollFrame:SetScript("OnShow", function() 
-			--ElvUI fix
-			if (QuestMapFrame.DetailsFrame:IsShown()) then
-				self:SelectTab(WQT_TabDetails); 
-				return;
-			end
-			
-			if (self.selectedTab and self.selectedTab:GetID() == 2) then
-				self:SelectTab(WQT_TabWorld); 
-			else
-				self:SelectTab(WQT_TabNormal); 
-			end
 		end)
 		
 	-- Re-anchor list when maxi/minimizing world map
@@ -2091,7 +2099,7 @@ function WQT_CoreMixin:OnLoad()
 		
 	-- Opening quest details
 	hooksecurefunc("QuestMapFrame_ShowQuestDetails", function(questID)
-			self:SelectTab(WQT_TabDetails);
+			self:SelectTab(QuestLogDisplayMode.Quests);
 			if QuestMapFrame.DetailsFrame.questID == nil then
 				QuestMapFrame.DetailsFrame.questID = questID;
 			end
@@ -2219,12 +2227,6 @@ function WQT_CoreMixin:OnLoad()
 				QuestMapFrame.QuestSessionManagement:Hide();
 			end
 		end);
-
-	-- Reduce SearchBox width to make room for the tabs
-	local a,b,c,d,e = QuestMapFrame.QuestsFrame.SearchBox:GetPoint(1);
-	QuestMapFrame.QuestsFrame.SearchBox:ClearAllPoints();
-	QuestMapFrame.QuestsFrame.SearchBox:SetWidth(220);
-	QuestMapFrame.QuestsFrame.SearchBox:SetPoint("BOTTOMRIGHT", b, "TOPRIGHT", 0, e);
 end
 
 function WQT_CoreMixin:ApplyAllSettings()
@@ -2576,7 +2578,6 @@ function WQT_CoreMixin:ShowOverlayFrame(frame)
 
 	-- Hide little gear icon
 	self.SettingsButton:Hide();
-	QuestMapFrame.SettingsDropdown:Hide();
 
 	-- Hide quest and filter to prevent bleeding through when walking around
 	WQT_QuestScrollFrame:Hide();
@@ -2592,7 +2593,6 @@ function WQT_CoreMixin:HideOverlayFrame()
 
 	-- Show little gear icon
 	self.SettingsButton:Show();
-	QuestMapFrame.SettingsDropdown:Show();
 
 	-- Show everything again
 	WQT_QuestScrollFrame:Show();
@@ -2622,64 +2622,41 @@ function WQT_CoreMixin:SetCustomEnabled(value)
 	self.ScrollFrame:EnableMouseWheel(value);
 end
 
-function WQT_CoreMixin:SelectTab(tab)
-	
-	local id = tab and tab:GetID() or 0;
-	if self.selectedTab ~= tab then
-		PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
+function WQT_CoreMixin:SelectTab(displayMode)
+	if displayMode == nil then
+		return;
+	end
+	if self.selectedTab ~= displayMode then
 		WQT_WorldQuestFrame.pinDataProvider:RefreshAllData();
 	end
-	self.selectedTab = tab;
+	self.selectedTab = displayMode;
 
-	-- Hide quest log search box if the map legend is shown
-	QuestMapFrame.QuestsFrame.SearchBox:SetShown(not self.isMapLegendVisible);
+	-- Uncheck every tab
+	for i, frame in ipairs(QuestMapFrame.TabButtons) do
+		frame:SetChecked(frame.displayMode == displayMode);
+	end
 
-	WQT_TabNormal:SetShown(not self.isMapLegendVisible);
-	WQT_TabWorld:SetShown(not self.isMapLegendVisible);
-	WQT_TabNormal:SetFrameLevel(2);
-	WQT_TabWorld:SetFrameLevel(2);
-	WQT_TabNormal.Hider:Show();
-	WQT_TabWorld.Hider:Show();
+	-- Hide frames
+	for i, frame in ipairs(QuestMapFrame.ContentFrames) do
+		frame:SetShown(frame.displayMode == displayMode);
+	end
 
 	-- Hide/show when quest details are shown
 	QuestMapFrame_UpdateQuestSessionState(QuestMapFrame);
 	self:HideOverlayFrame();
-	
-	-- Move quest window down, making space for tabs
-	local a,b,c,d = QuestMapFrame:GetPoint(1);
-	QuestMapFrame:SetPoint(a,b,c,d,-35);
-		
-	if (not QuestScrollFrame.Contents:IsShown() and not QuestMapFrame.DetailsFrame:IsShown()) or id == 1 then
-		-- Default questlog
-		self:Hide();
-		WQT_TabNormal:SetFrameLevel(10);
-		WQT_TabNormal.Hider:Hide();
-		WQT_TabNormal.Highlight:Show();
-		WQT_TabNormal.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.78906250, 0.95703125);
-		WQT_TabWorld.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.61328125, 0.78125000);
-		QuestScrollFrame:SetShown(not self.isMapLegendVisible); -- Only show if the map legend is not visible
-	elseif id == 2 then
-		-- WQT
-		WQT_TabWorld:SetFrameLevel(10);
-		WQT_TabWorld.Hider:Hide();
-		WQT_TabWorld.Highlight:Show();
+
+	-- Force WorldQuestTab icon
+	WQT_TabWorld.Icon:SetTexture("Interface/Worldmap/UI-World-Icon");
+
+	if displayMode == QuestLogDisplayMode.WorldQuests then
 		self:Show();
-		WQT_TabWorld.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.78906250, 0.95703125);
-		WQT_TabNormal.TabBg:SetTexCoord(0.01562500, 0.79687500, 0.61328125, 0.78125000);
-		QuestScrollFrame:Hide();
-		-- Prevent the party sync block from showing through the quest list. 
-		QuestMapFrame.QuestSessionManagement:Hide();
-	elseif id == 3 then
-		-- Quest details
+		-- Trick to force all tabs to register a displaymode change event
+		QuestMapFrame.displayMode = displayMode;
+
+		WQT_TabWorld.Icon:SetAlpha(1);
+	else
 		self:Hide();
-		WQT_TabNormal:Hide();
-		WQT_TabWorld:Hide()
-		QuestScrollFrame:Hide();
-		QuestMapFrame.DetailsFrame:Show();
-		
-		-- Move quest window up if a quest is showing
-		local a,b,c,d = QuestMapFrame:GetPoint(1);
-		QuestMapFrame:SetPoint(a,b,c,d,-25);
+		WQT_TabWorld.Icon:SetAlpha(0.7);
 	end
 	
 	WQT_QuestLogFiller:UpdateVisibility();
@@ -2700,7 +2677,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		WQT_WorldQuestFrame:SetParent(QuestMapFrame);
 		WQT_WorldQuestFrame:SetPoint("TOPLEFT", parent, 3, -10);
 		WQT_WorldQuestFrame:SetPoint("BOTTOMRIGHT", parent, -8, 3);
-		WQT_WorldQuestFrame:SelectTab(WQT_TabWorld);
+		WQT_WorldQuestFrame:SelectTab(QuestLogDisplayMode.WorldQuests);
 		return
 	end
 	
@@ -2710,7 +2687,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 	local point =  "BOTTOMLEFT";
 	local xOffset = 3;
 	local yOffset = 5;
-	local tab = WQT_TabWorld;
+	local tab = QuestLogDisplayMode.WorldQuests;
 	
 	if (anchor == _V["LIST_ANCHOR_TYPE"].flight) then
 		parent = WQT_FlightMapContainer;
