@@ -160,7 +160,7 @@ local WQT_WAR_WITHIN = {
 	[2339] =  {["x"] = 0.73, ["y"] = 0.25}, -- Dornogal
 	-- For some reason the Siren Isle is inside the Isle of Dorn map...
 	[2369] =  {["x"] = 0.76, ["y"] = 0.21}, -- Siren Isle
-	[2374] =  {["x"] = 0.82, ["y"] = 0.73}, -- Undermine
+	[2346] =  {["x"] = 0.82, ["y"] = 0.73}, -- Undermine
 }
 local WQT_DRAGONFLIGHT = {
 	[2026] =  {["x"] = 0.66, ["y"] = 0.09}, -- Forbidden Reach (dracthyr start)
@@ -323,6 +323,7 @@ local ZonesByExpansion = {
 		2255, -- Azj-Kahet
 		2256, -- Azj-Kahet - Lower
 		2369, -- Siren Isle
+		2346, -- Undermine
 	}
 	,[LE_EXPANSION_DRAGONFLIGHT] = {
 		1978, -- Dragon Isles
@@ -1638,6 +1639,12 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.1.0.1",
+			["fixes"] = {
+				"Now Undermine world quests appear correctly.",
+				"Moved tooltips up a little.",
+			},
+		},
 		{["version"] = "11.1.0",
 			["intro"] = { "Update for 11.1.0" },
 			["new"] = {

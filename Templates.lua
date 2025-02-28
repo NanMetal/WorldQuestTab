@@ -707,8 +707,7 @@ function WQT_Utils:ShowQuestTooltip(button, questInfo, style)
 	style = style or TOOLTIP_QUEST_REWARDS_STYLE_WORLD_QUEST;
 	WQT:ShowDebugTooltipForQuest(questInfo, button);
 	
-	GameTooltip:SetOwner(button, "ANCHOR_BOTTOMRIGHT", 26, 34);
-	--GameTooltip:SetAnchorType("ANCHOR_BOTTOMRIGHT", 26,34);
+	GameTooltip:SetOwner(button, "ANCHOR_BOTTOMRIGHT", 26, button:GetHeight() + 2);
 	-- In case we somehow don't have data on this quest, even through that makes no sense at this point
 	if (not questInfo.questID or not HaveQuestData(questInfo.questID)) then
 		GameTooltip_SetTitle(GameTooltip, RETRIEVING_DATA, RED_FONT_COLOR);
