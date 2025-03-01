@@ -1492,11 +1492,11 @@ _V["WQT_FACTION_DATA"] = {
 	,[2605] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5862762 } -- The General
 	,[2607] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5862763 } -- The Vizier
 	,[2640] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 5453546 } -- Brann Bronzebeard
-	,[2653] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- The Cartels of Undermine
-	,[2671] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Venture Company
-	,[2673] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Bilgewater Cartel
-	,[2675] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Blackwater Cartel
-	,[2677] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 632354 } -- Steamwheedle Cartel
+	,[2653] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 6252691 } -- The Cartels of Undermine
+	,[2671] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 6439631 } -- Venture Company
+	,[2673] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 6439627 } -- Bilgewater Cartel
+	,[2675] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 6439628 } -- Blackwater Cartel
+	,[2677] =	{ ["expansion"] = LE_EXPANSION_WAR_WITHIN,["playerFaction"] = nil ,["texture"] = 6439630 } -- Steamwheedle Cartel
 }
 
 -- Add localized faction names
@@ -1639,6 +1639,14 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.1.0.2",
+			["fixes"] = {
+				"Corrected Undermine factions icons.",
+			},
+			["changes"] = {
+				"Some code refactor regarding item highlight.",
+			},
+		},
 		{["version"] = "11.1.0.1",
 			["fixes"] = {
 				"Now Undermine world quests appear correctly.",

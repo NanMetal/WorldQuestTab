@@ -1167,7 +1167,7 @@ function WQT_ListButtonMixin:UpdateTime()
 	end
 
 	local colorA = 0.8;
-	if self.Highlight:IsVisible() then
+	if self:IsHover() then
 		colorA = 1;
 	end
 
@@ -1176,12 +1176,7 @@ function WQT_ListButtonMixin:UpdateTime()
 end
 
 function WQT_ListButtonMixin:OnLeave()
-	self.Highlight:Hide();
-	self.Title:SetTextColor(EVENT_SCHEDULER_NAME_COLOR:GetRGB());
-	self.Extra:SetTextColor(EVENT_SCHEDULER_LOCATION_COLOR:GetRGB());
-
-	local colorR, colorG, colorB, colorA = self.Time:GetTextColor();
-	self.Time:SetTextColor(colorR, colorG, colorB, 0.8);
+	self:SetHighlight(false);
 
 	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, false);
 	WQT_WorldQuestFrame:HideWorldmapHighlight();
@@ -1197,12 +1192,7 @@ end
 function WQT_ListButtonMixin:OnEnter()
 	local questInfo = self.questInfo;
 	if (not questInfo) then return; end
-	self.Highlight:Show();
-	self.Title:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGB());
-	self.Extra:SetTextColor(NORMAL_FONT_COLOR:GetRGB());
-
-	local colorR, colorG, colorB, colorA = self.Time:GetTextColor();
-	self.Time:SetTextColor(colorR, colorG, colorB, 1);
+	self:SetHighlight(true);
 	
 	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, true);
 	WQT_WorldQuestFrame:ShowWorldmapHighlight(questInfo.questID);
@@ -1218,6 +1208,29 @@ function WQT_ListButtonMixin:OnEnter()
 
 	WQT_Utils:ShowQuestTooltip(self, questInfo, style);
 	self:SetAlpha(1);
+end
+
+function WQT_ListButtonMixin:SetHighlight(highlight)
+	local titleColor = HIGHLIGHT_FONT_COLOR;
+	local extraColor = NORMAL_FONT_COLOR;
+	local timeAlpha = 1;
+	if highlight then
+		self.Highlight:Show();
+	else
+		titleColor = EVENT_SCHEDULER_NAME_COLOR;
+		extraColor = EVENT_SCHEDULER_LOCATION_COLOR;
+		timeAlpha = 0.8;
+		self.Highlight:Hide();
+	end
+	self.Title:SetTextColor(titleColor:GetRGB());
+	self.Extra:SetTextColor(extraColor:GetRGB());
+
+	local colorR, colorG, colorB = self.Time:GetTextColor();
+	self.Time:SetTextColor(colorR, colorG, colorB, timeAlpha);
+end
+
+function WQT_ListButtonMixin:IsHover()
+	return self.Highlight:IsVisible();
 end
 
 function WQT_ListButtonMixin:UpdateQuestType(questInfo)
