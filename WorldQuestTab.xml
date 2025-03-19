@@ -550,7 +550,10 @@
 	<!--
 		Main frame
 	-->
-	<Frame name="WQT_WorldQuestFrame" mixin="WQT_CoreMixin" parent="QuestMapFrame" enableMouse="true" hidden="false">
+	<Frame name="WQT_WorldQuestFrame" mixin="WQT_CoreMixin" parent="QuestMapFrame" parentArray="ContentFrames" enableMouse="true" hidden="true">
+		<KeyValues>
+			<KeyValue key="displayMode" value="QuestLogDisplayMode.WorldQuests" type="global"/>
+		</KeyValues>
 		<Size x="300"/>
 		<Frames>
 			<Cooldown parentKey="ProgressBar" hideCountdownNumbers="true" reverse="true">
@@ -829,24 +832,13 @@
 	
 	<Button name="WQT_TabWorld" inherits="QuestLogTabButtonTemplate" parent="QuestMapFrame" enableMouse="true" id="4">
 		<KeyValues>
-			<KeyValue key="displayMode" value="4" type="number"/>
+			<KeyValue key="displayMode" value="QuestLogDisplayMode.WorldQuests" type="global"/>
 			<KeyValue key="activeAtlas" value="Worldquest-icon" type="string"/>
 			<KeyValue key="inactiveAtlas" value="Worldquest-icon" type="string"/>
 			<KeyValue key="tooltipText" value="TRACKER_HEADER_WORLD_QUESTS" type="global"/>
 		</KeyValues>
 		<Anchors>
 			<Anchor point="TOP" relativeKey="$parent.MapLegendTab" relativePoint="BOTTOM" x="0" y="-3"/>
-		</Anchors>
-		<Scripts>
-			<OnClick>
-				WQT_WorldQuestFrame:SelectTab(self.displayMode);
-			</OnClick>
-		</Scripts>
-	</Button>
-	
-	<Button name="WQT_TabDetails" inherits="WQT_TabTemplate" parent="QuestMapFrame" enableMouse="false" id="3" hidden="true">
-		<Anchors>
-			<Anchor point="LEFT" relativeTo="WQT_TabWorld" relativePoint="RIGHT"/>
 		</Anchors>
 	</Button>
 	

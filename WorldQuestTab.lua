@@ -925,10 +925,29 @@ function WQT:OnEnable()
 		self.filterOrders[k] = GetSortedFilterOrder(k);
 	end
 	
+	-- Tab handler
+	local function TabHandler(tab, button, upInside)
+		QuestLogTabButtonMixin.OnMouseUp(tab, button, upInside);
+		if button == "LeftButton" and upInside then
+			WQT_WorldQuestFrame:SetDisplayMode(tab.displayMode);
+		end
+	end
+	WQT_TabWorld:SetScript("OnMouseUp", TabHandler);
+	WQT_TabWorld:SetChecked(false);
+	WQT_TabWorld.Icon:SetAlpha(0.5);
+
+	-- Tab icon alpha handler
+	WQT_WorldQuestFrame:SetScript("OnShow", function(self)
+		WQT_TabWorld.Icon:SetAlpha(1);
+	end);
+	WQT_WorldQuestFrame:SetScript("OnHide", function(self)
+		WQT_TabWorld.Icon:SetAlpha(0.5);
+	end);
+
 	-- Show default tab depending on setting
-	WQT_WorldQuestFrame:SelectTab(self.settings.general.defaultTab and QuestLogDisplayMode.WorldQuests or QuestLogDisplayMode.Quests);
-	WQT_WorldQuestFrame.tabBeforeAnchor = WQT_WorldQuestFrame.selectedTab;
-	
+	WQT_WorldQuestFrame:SetDisplayMode(self.settings.general.defaultTab and QuestLogDisplayMode.WorldQuests or QuestLogDisplayMode.Quests);
+	WQT_WorldQuestFrame.displayModeBeforeAnchor = QuestMapFrame.displayMode;
+
 	-- Show quest log counter
 	WQT_QuestLogFiller:UpdateVisibility();
 	
@@ -1859,7 +1878,7 @@ end
 -- ShouldAllowLFG(questInfo)
 -- SetCvarValue(flagKey, value)
 -- SetCustomEnabled(value)
--- SelectTab(tab)		1. Default questlog  2. WQT  3. Quest details
+-- SetDisplayMode(displayMode)
 -- ChangeAnchorLocation(anchor)		Show list on a different container using _V["LIST_ANCHOR_TYPE"] variable
 -- :<event> -> ADDON_LOADED, PLAYER_REGEN_DISABLED, PLAYER_REGEN_ENABLED, QUEST_TURNED_IN, PVP_TIMER_UPDATE, WORLD_QUEST_COMPLETED_BY_SPELL, QUEST_LOG_UPDATE, QUEST_WATCH_LIST_CHANGED
 
@@ -2024,43 +2043,19 @@ function WQT_CoreMixin:OnLoad()
 	--
 	-- Function hooks
 	-- 
-	
-	-- Show quest tab when leaving quest details
-	hooksecurefunc("QuestMapFrame_ReturnFromQuestDetails", function()
-			self:SelectTab(QuestLogDisplayMode.Quests);
-		end)
-	-- When untracking a quest with details open
-	hooksecurefunc("QuestMapFrame_CloseQuestDetails", function()
-			if (self.selectedTab == WQT_TabDetails) then
-				self:SelectTab(QuestLogDisplayMode.Quests);
-			end
-		end)
-		
 
 	-- World map
-	-- If we were reading details when we switch maps, change back to normal quests
-	EventRegistry:RegisterCallback("MapCanvas.MapSet", function() 
-			-- Now we do it modern way.
-			if (self.selectedTab == WQT_TabDetails) then
-				self:SelectTab(QuestLogDisplayMode.Quests); 
-			end
-		end);
 	
 	-- Clicking the map legend, hide & change to quest tab
 	EventRegistry:RegisterCallback("ShowMapLegend", function()
 		self.isMapLegendVisible = true;
-		self:SelectTab(QuestLogDisplayMode.Quests);
+		self:SetDisplayMode(QuestLogDisplayMode.Quests);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
 	end);
 	EventRegistry:RegisterCallback("HideMapLegend", function()
 		self.isMapLegendVisible = false;
-		self:SelectTab(QuestLogDisplayMode.Quests);
+		self:SetDisplayMode(QuestLogDisplayMode.Quests);
 		WQT_WorldQuestFrame:ChangeAnchorLocation(_V["LIST_ANCHOR_TYPE"].world);
-	end);
-
-	-- Update when clicking the new map tabs
-	EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function(_, displayMode)
-		self:SelectTab(displayMode);
 	end);
 	
 	-- Update when opening the map
@@ -2112,7 +2107,7 @@ function WQT_CoreMixin:OnLoad()
 		
 	-- Opening quest details
 	hooksecurefunc("QuestMapFrame_ShowQuestDetails", function(questID)
-			self:SelectTab(QuestLogDisplayMode.Quests);
+			self:SetDisplayMode(QuestLogDisplayMode.Quests);
 			if QuestMapFrame.DetailsFrame.questID == nil then
 				QuestMapFrame.DetailsFrame.questID = questID;
 			end
@@ -2635,50 +2630,26 @@ function WQT_CoreMixin:SetCustomEnabled(value)
 	self.ScrollFrame:EnableMouseWheel(value);
 end
 
-function WQT_CoreMixin:SelectTab(displayMode)
+function WQT_CoreMixin:SetDisplayMode(displayMode)
 	if displayMode == nil then
 		return;
 	end
-	if self.selectedTab ~= displayMode then
+
+	QuestMapFrame_UpdateQuestSessionState(QuestMapFrame);
+	QuestMapFrame:SetDisplayMode(displayMode);
+
+	if QuestMapFrame.displayMode ~= displayMode then
 		WQT_WorldQuestFrame.pinDataProvider:RefreshAllData();
 	end
-	self.selectedTab = displayMode;
 
-	-- Uncheck every tab
-	for i, frame in ipairs(QuestMapFrame.TabButtons) do
-		frame:SetChecked(frame.displayMode == displayMode);
-	end
-
-	-- Hide frames
-	for i, frame in ipairs(QuestMapFrame.ContentFrames) do
-		frame:SetShown(frame.displayMode == displayMode);
-	end
-
-	-- Hide/show when quest details are shown
-	QuestMapFrame_UpdateQuestSessionState(QuestMapFrame);
 	self:HideOverlayFrame();
-
-	-- Force WorldQuestTab icon
-	WQT_TabWorld.Icon:SetTexture("Interface/Worldmap/UI-World-Icon");
-
-	if displayMode == QuestLogDisplayMode.WorldQuests then
-		self:Show();
-		-- Trick to force all tabs to register a displaymode change event
-		QuestMapFrame.displayMode = displayMode;
-
-		WQT_TabWorld.Icon:SetAlpha(1);
-	else
-		self:Hide();
-		WQT_TabWorld.Icon:SetAlpha(0.7);
-	end
-	
 	WQT_QuestLogFiller:UpdateVisibility();
 end
 
 function WQT_CoreMixin:ChangeAnchorLocation(anchor)
-	-- Store the original tab for when we come back to the world anchor
+	-- Store the original display mode for when we come back to the world anchor
 	if (self.anchor == _V["LIST_ANCHOR_TYPE"].world) then
-		self.tabBeforeAnchor = self.selectedTab;
+		self.displayModeBeforeAnchor = QuestMapFrame.displayMode;
 	end
 	
 	-- Prevent showing up when the map is minimized
@@ -2690,7 +2661,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		WQT_WorldQuestFrame:SetParent(QuestMapFrame);
 		WQT_WorldQuestFrame:SetPoint("TOPLEFT", parent, 3, -10);
 		WQT_WorldQuestFrame:SetPoint("BOTTOMRIGHT", parent, -8, 3);
-		WQT_WorldQuestFrame:SelectTab(QuestLogDisplayMode.WorldQuests);
+		WQT_WorldQuestFrame:SetDisplayMode(QuestLogDisplayMode.WorldQuests);
 		return
 	end
 	
@@ -2700,7 +2671,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 	local point =  "BOTTOMLEFT";
 	local xOffset = 3;
 	local yOffset = 5;
-	local tab = QuestLogDisplayMode.WorldQuests;
+	local displayMode = QuestLogDisplayMode.WorldQuests;
 	
 	if (anchor == _V["LIST_ANCHOR_TYPE"].flight) then
 		parent = WQT_FlightMapContainer;
@@ -2709,7 +2680,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		WQT_WorldQuestFrame:SetParent(parent);
 		WQT_WorldQuestFrame:SetPoint("TOPLEFT", parent, 3, -10);
 		WQT_WorldQuestFrame:SetPoint("BOTTOMRIGHT", parent, -8, 3);
-		WQT_WorldQuestFrame:SelectTab(tab);
+		WQT_WorldQuestFrame:SetDisplayMode(displayMode);
 		
 		WQT_WorldQuestFrame:TriggerCallback("AnchorChanged", anchor);
 		return;
@@ -2717,7 +2688,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		parent = WQT_OldTaxiMapContainer;
 	elseif (anchor == _V["LIST_ANCHOR_TYPE"].world) then
 		point = "TOPLEFT";
-		tab = self.tabBeforeAnchor;
+		displayMode = self.displayModeBeforeAnchor;
 		WQT_WorldMapContainer:Hide();
 		WQT_WorldMapContainerButton:Hide();
 		
@@ -2725,7 +2696,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		WQT_WorldQuestFrame:SetParent(parent);
 		WQT_WorldQuestFrame:SetPoint("TOPLEFT", QuestMapFrame, -3, 7);
 		WQT_WorldQuestFrame:SetPoint("BOTTOMRIGHT", QuestMapFrame);
-		WQT_WorldQuestFrame:SelectTab(tab);
+		WQT_WorldQuestFrame:SetDisplayMode(displayMode);
 		
 		WQT_WorldQuestFrame:TriggerCallback("AnchorChanged", anchor);
 		return
@@ -2741,7 +2712,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 		WQT_WorldQuestFrame:SetParent(parent);
 		WQT_WorldQuestFrame:SetPoint("TOPLEFT", parent, 3, -10);
 		WQT_WorldQuestFrame:SetPoint("BOTTOMRIGHT", parent, -8, 3);
-		WQT_WorldQuestFrame:SelectTab(tab);
+		WQT_WorldQuestFrame:SetDisplayMode(displayMode);
 		
 		WQT_WorldQuestFrame:TriggerCallback("AnchorChanged", anchor);
 		return
@@ -2750,7 +2721,7 @@ function WQT_CoreMixin:ChangeAnchorLocation(anchor)
 	WQT_WorldQuestFrame:ClearAllPoints();
 	WQT_WorldQuestFrame:SetParent(parent);
 	WQT_WorldQuestFrame:SetPoint(point, parent, point, xOffset, yOffset);
-	WQT_WorldQuestFrame:SelectTab(tab);
+	WQT_WorldQuestFrame:SetDisplayMode(displayMode);
 	WQT_WorldQuestFrame:TriggerCallback("AnchorChanged", anchor);
 end
 
