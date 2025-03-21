@@ -215,6 +215,9 @@ local WQT_LEGION = {
 	[646]	= {["x"] = 0.54, ["y"] = 0.68}, -- Broken Shore
 	[627]	= {["x"] = 0.45, ["y"] = 0.64}, -- Dalaran
 	[905] 	= {["x"] = 0.86, ["y"] = 0.17}, -- Argus
+	-- [830]	= {["x"] = 0.86, ["y"] = 0.15}, -- Krokuun
+	-- [885]	= {["x"] = 0.86, ["y"] = 0.15}, -- Antoran Wastes
+	-- [882]	= {["x"] = 0.86, ["y"] = 0.15}, -- Mac'Aree
 }
 local WQT_KALIMDOR = { 
 	[81] 	= {["x"] = 0.42, ["y"] = 0.82}, -- Silithus
@@ -322,6 +325,7 @@ local ZonesByExpansion = {
 		2248, -- Isle of Dorn
 		2255, -- Azj-Kahet
 		2256, -- Azj-Kahet - Lower
+		2339, -- Dornogal
 		2369, -- Siren Isle
 		2346, -- Undermine
 	}
@@ -1342,7 +1346,12 @@ _V["FILTER_FUNCTIONS"] = {
 -- /dump WorldMapFrame:GetMapID()
 -- /dump FlightMapFrame:GetMapID()
 _V["WQT_CONTINENT_GROUPS"] = {
-		[2200] = {1978,2133} -- Emerald Dream 
+		[2274] = {2369,2346} -- Khaz Algar
+		,[2276] = {2369,2346} -- Khaz Algar flightmap
+		,[2369] = {2274,2346} -- Siren Isle 
+		,[2346] = {2274,2369} -- Undermine 
+		,[2374] = {2274,2369} -- Undermine flightmap
+		,[2200] = {1978,2133} -- Emerald Dream 
 		,[2241] = {1978,2133} -- Emerald Dream flightmap
 		,[2133] = {1978,2200} -- Zaralek Cavern 
 		,[2175] = {1978,2200} -- Zaralek Cavern flightmap
@@ -1360,6 +1369,7 @@ _V["WQT_CONTINENT_GROUPS"] = {
 	}
 
 _V["ZONE_SUBZONES"] = {
+	[2248] = {2339, 2369}; -- Isle of Dorn, Dornogal, Siren Isle
 	[2255] = {2256, 2213, 2216}; -- Azj-Kahet, Azj-Kahet - Lower, City of Threads, City of Threads - Lower
 	[2256] = {2255, 2213, 2216}; -- Azj-Kahet - Lower, Azj-Kahet, City of Threads, City of Threads - Lower
 	[2025] = {2112, 2085}; -- Thaldraszus, Valdrakken, Primalist Future
@@ -1367,10 +1377,14 @@ _V["ZONE_SUBZONES"] = {
 	[1533] = {1707, 1708}; -- Bastion Covenant
 	[1525] = {1699, 1700}; -- Revendreth Covenant
 	[1536] = {1698}; -- Maldraxxus Covenant
+	[905]  = {830, 882, 885}; -- Krokuun, Eredath, Antoran Wastes
 }
 
 _V["WQT_ZONE_MAPCOORDS"] = {
-		[2276] = WQT_WAR_WITHIN -- Khaz Algar flightmap
+		[2374]	= { -- Undermine flightmap
+			[2346] = {["x"] = 0, ["y"] = 0} -- Undermine
+		}
+		,[2276] = WQT_WAR_WITHIN -- Khaz Algar flightmap
 		,[2274] = WQT_WAR_WITHIN -- Khaz Algar
 		,[2241]	= { -- Emerald Dream flightmap
 			[2200] = {["x"] = 0, ["y"] = 0} -- Emerald Dream
@@ -1409,14 +1423,16 @@ _V["WQT_ZONE_MAPCOORDS"] = {
 			,[50] = {["x"] = 0.67, ["y"] = 0.40} -- North
 		}
 		,[947]	= { -- All of Azeroth (Also look at UpdateAzerothZones() in Dataprovider.lua)
-			[12] = {["x"] = 0.24, ["y"] = 0.55}
+			[12] = {["x"] = 0.18, ["y"] = 0.55}
 			,[13] = {["x"] = 0.89, ["y"] = 0.52}
 			,[113] = {["x"] = 0.49, ["y"] = 0.12}
 			,[424] = {["x"] = 0.48, ["y"] = 0.82}
 			,[619] = {["x"] = 0.58, ["y"] = 0.39}
 			,[875] = {["x"] = 0.54, ["y"] = 0.63}
 			,[876] = {["x"] = 0.71, ["y"] = 0.50}
+			,[948] = {["x"] = 0.46, ["y"] = 0.48}
 			,[1978] = {["x"] = 0.77, ["y"] = 0.22}
+			,[2274] = {["x"] = 0.29, ["y"] = 0.84}
 		}
 	}
 
