@@ -1655,6 +1655,12 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.1.5",
+			["intro"] = { "Update for 11.1.5" },
+			["fixes"] = {
+				"Updated missing zone data.",
+			},
+		},
 		{["version"] = "11.1.0.3",
 			["changes"] = {
 				"Changed how tab works internally.",

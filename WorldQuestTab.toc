@@ -1,8 +1,8 @@
-﻿## Interface: 110100
+﻿## Interface: 110105
 ## Title: World Quest Tab
 ## Notes: Creates a new quest tab to keep track of world quests.
 ## Author: LanceDH
-## Version: 11.1.0.3
+## Version: 11.1.5
 ## SavedVariables: BWQDB
 ## X-Website: https://www.curseforge.com/wow/addons/worldquesttab
 ## X-Curse-Project-ID: 102243
