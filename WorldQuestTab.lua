@@ -709,13 +709,6 @@ function WQT:InitTrackContextMenu(self)
 			GameTooltip_AddInstructionLine(tooltip, _L["SHORTCUT_WAYPOINT"]);
 		end);
 		
-		-- LFG if possible
-		if (WQT_WorldQuestFrame:ShouldAllowLFG(questInfo)) then
-			button = rootDescription:CreateButton(OBJECTIVES_FIND_GROUP, function ()
-					WQT_WorldQuestFrame:SearchGroup(questInfo);
-				end, true);
-		end
-		
 		-- Dislike toggle
 		button = rootDescription:CreateCheckbox(_L["UNINTERESTED"],
 							function()
@@ -950,35 +943,7 @@ function WQT:OnEnable()
 
 	-- Show quest log counter
 	WQT_QuestLogFiller:UpdateVisibility();
-	
-	-- Add LFG buttons to objective tracker
-	if self.settings.general.useLFGButtons then
-		WQT_WorldQuestFrame.LFGButtonPool = CreateFramePool("BUTTON", nil, "WQT_LFGEyeButtonTemplate");
-		hooksecurefunc(WorldQuestObjectiveTracker, "SetUpQuestBlock", function(owner, block)
-				local questID = block.id;
-				if (not questID) then return; end
-				
-				-- release button if it exists
-				if (block.WQTButton) then
-					WQT_WorldQuestFrame.LFGButtonPool:Release(block.WQTButton);
-					block.WQTButton = nil;
-				end
-				
-				if (not (block.groupFinderButton) and QuestUtils_IsQuestWorldQuest(questID)) then
-					if (WQT_WorldQuestFrame:ShouldAllowLFG(questID)) and not block.rightEdgeFrame then
-						local button = WQT_WorldQuestFrame.LFGButtonPool:Acquire();
-						button.questID = questID;
-						button:SetParent(block);
-						button:ClearAllPoints();
-						local offsetX = (block.rightButton or block.itemButton) and -13 or 6; 
-						button:SetPoint("TOPRIGHT", block, offsetX, 2);
-						button:Show();
-						block.WQTButton = button;
-					end
-				end
-			end);
-	end
-	
+
 	-- Load settings
 	WQT_SettingsFrame:Init(_V["SETTING_CATEGORIES"], _V["SETTING_LIST"]);
 	
@@ -1007,7 +972,7 @@ function WQT:OnEnable()
 	-- Create Sort dropdown
 	WQT_InitSortDropdown(WQT_WorldQuestFrame.SortDropdown);
 	
-	-- Create settings dropdown
+	-- Create Settings dropdown
 	WQT_InitSettingsDropdown(WQT_WorldQuestFrame.SettingsButton);
 	
 	self.isEnabled = true;
@@ -1196,14 +1161,9 @@ end
 
 function WQT_ListButtonMixin:OnLeave()
 	self:SetHighlight(false);
-
-	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, false);
-	WQT_WorldQuestFrame:HideWorldmapHighlight();
+	
 	GameTooltip:Hide();
 	GameTooltip.ItemTooltip:Hide();
-	
-	local isDisliked = self.questInfo:IsDisliked();
-	self:SetAlpha(isDisliked and 0.75 or 1);
 	
 	WQT:HideDebugTooltip()
 end
@@ -1211,10 +1171,7 @@ end
 function WQT_ListButtonMixin:OnEnter()
 	local questInfo = self.questInfo;
 	if (not questInfo) then return; end
-	self:SetHighlight(true);
-	
-	WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, true);
-	WQT_WorldQuestFrame:ShowWorldmapHighlight(questInfo.questID);
+	self:SetHighlight(true, true);
 	
 	local style = nil;
 	if (questInfo:IsQuestOfType(WQT_QUESTTYPE.calling)) then
@@ -1229,17 +1186,29 @@ function WQT_ListButtonMixin:OnEnter()
 	self:SetAlpha(1);
 end
 
-function WQT_ListButtonMixin:SetHighlight(highlight)
+function WQT_ListButtonMixin:SetHighlight(highlight, showWorldmapHighlight)
 	local titleColor = HIGHLIGHT_FONT_COLOR;
 	local extraColor = NORMAL_FONT_COLOR;
 	local timeAlpha = 1;
 	if highlight then
 		self.Highlight:Show();
+
+		if showWorldmapHighlight then
+			WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, true);
+			WQT_WorldQuestFrame:ShowWorldmapHighlight(self.questInfo.questID);
+		end
 	else
 		titleColor = EVENT_SCHEDULER_NAME_COLOR;
 		extraColor = EVENT_SCHEDULER_LOCATION_COLOR;
 		timeAlpha = 0.8;
+
 		self.Highlight:Hide();
+
+		WQT_WorldQuestFrame.pinDataProvider:SetQuestIDPinged(self.questInfo.questID, false);
+		WQT_WorldQuestFrame:HideWorldmapHighlight();
+		
+		local isDisliked = self.questInfo:IsDisliked();
+		self:SetAlpha(isDisliked and 0.75 or 1);
 	end
 	self.Title:SetTextColor(titleColor:GetRGB());
 	self.Extra:SetTextColor(extraColor:GetRGB());
@@ -1367,7 +1336,7 @@ function WQT_ListButtonMixin:Update(questInfo, shouldShowZone)
 	
 	-- Highlight
 	local showHighLight = self:IsMouseOver() or self.Faction:IsMouseOver() or (WQT_QuestScrollFrame.PoIHoverId and WQT_QuestScrollFrame.PoIHoverId == questInfo.questID)
-	self.Highlight:SetShown(showHighLight);
+	self:SetHighlight(showHighLight);
 	local titleColor = EVENT_SCHEDULER_NAME_COLOR;
 	local extraColor = EVENT_SCHEDULER_LOCATION_COLOR;
 	local colorA = 0.8;
@@ -1431,7 +1400,7 @@ function WQT_ListButtonMixin:Update(questInfo, shouldShowZone)
 end
 
 function WQT_ListButtonMixin:FactionOnEnter(frame)
-	self.Highlight:Show();
+	self:SetHighlight(true, true);
 	local _, factionId = C_TaskQuest.GetQuestInfoByQuestID(self.questInfo.questID);
 	if (factionId) then
 		local factionInfo = WQT_Utils:GetFactionDataInternal(factionId)
@@ -1874,8 +1843,6 @@ end
 -- UpdateWorldMapButton()
 -- ShowHighlightOnMapFilters()
 -- FilterClearButtonOnClick()
--- SearchGroup(questInfo)
--- ShouldAllowLFG(questInfo)
 -- SetCvarValue(flagKey, value)
 -- SetCustomEnabled(value)
 -- SetDisplayMode(displayMode)
@@ -2013,8 +1980,6 @@ function WQT_CoreMixin:OnLoad()
 		end, addonName)
 
 	-- Events
-	self:RegisterEvent("PLAYER_REGEN_DISABLED");
-	self:RegisterEvent("PLAYER_REGEN_ENABLED");
 	self:RegisterEvent("QUEST_TURNED_IN");
 	self:RegisterEvent("WORLD_QUEST_COMPLETED_BY_SPELL"); -- Class hall items
 	self:RegisterEvent("PVP_TIMER_UPDATE"); -- Warmode toggle because WAR_MODE_STATUS_UPDATE doesn't seems to fire when toggling warmode
@@ -2166,64 +2131,7 @@ function WQT_CoreMixin:OnLoad()
 			WQT_QuestScrollFrame:UpdateQuestList(true);
 			self.notTracked = nil;
 		end)
-		
-	-- PVEFrame quest grouping
-	LFGListFrame:HookScript("OnHide", function() 
-			WQT_GroupSearch:Hide(); 
-			WQT_GroupSearch.questID = nil;
-			WQT_GroupSearch.title = nil;
-		end)
-
-	hooksecurefunc("LFGListSearchPanel_UpdateResults", function(self)
-			if (self.searching and not InCombatLockdown()) then
-				local searchString = LFGListFrame.SearchPanel.SearchBox:GetText();
-				searchString = searchString:lower();
-			
-				if (WQT_GroupSearch.questID and WQT_GroupSearch.title and not (searchString:find(WQT_GroupSearch.questID) or WQT_GroupSearch.title:lower():find(searchString))) then
-					WQT_GroupSearch.Text:SetText(_L["FORMAT_GROUP_TYPO"]:format(WQT_GroupSearch.questID, WQT_GroupSearch.title));
-					WQT_GroupSearch:Show();
-				else
-					WQT_GroupSearch:Hide();
-				end
-			end
-		end);
-		
-	LFGListFrame.EntryCreation:HookScript("OnHide", function() 
-		if (not InCombatLockdown()) then
-				WQT_GroupSearch:Hide();
-			end
-		end);
-		
-	hooksecurefunc("LFGListUtil_FindQuestGroup", function(questID, isFromGreenEyeButton)
-		if (isFromGreenEyeButton) then
-				WQT_GroupSearch:Hide();
-				WQT_GroupSearch.questID = nil;
-				WQT_GroupSearch.title = nil;
-			end
-		end);
-
-	local LFGParent = LFGListFrame.SearchPanel.ScrollBox;
-	if LFGParent and LFGParent.StartGroupButton then
-		LFGParent.StartGroupButton:HookScript("OnClick", function() 
-			-- If we are creating a group because we couldn't find one, show the info on the create frame
-			if InCombatLockdown() then return; end
-			local searchString = LFGListFrame.SearchPanel.SearchBox:GetText();
-			searchString = searchString:lower();
-			if (WQT_GroupSearch.questID and WQT_GroupSearch.title and (searchString:find(WQT_GroupSearch.questID) or WQT_GroupSearch.title:lower():find(searchString))) then
-				WQT_GroupSearch.Text:SetText(_L["FORMAT_GROUP_CREATE"]:format(WQT_GroupSearch.questID, WQT_GroupSearch.title));
-				WQT_GroupSearch:SetParent(LFGListFrame.EntryCreation.Name);
-				WQT_GroupSearch:SetFrameLevel(LFGListFrame.EntryCreation.Name:GetFrameLevel()+5);
-				WQT_GroupSearch:ClearAllPoints();
-				WQT_GroupSearch:SetPoint("BOTTOMLEFT", LFGListFrame.EntryCreation.Name, "TOPLEFT", -2, 3);
-				WQT_GroupSearch:SetPoint("BOTTOMRIGHT", LFGListFrame.EntryCreation.Name, "TOPRIGHT", -2, 3);
-				WQT_GroupSearch.downArrow = true;
-				WQT_GroupSearch.questID = nil;
-				WQT_GroupSearch.title = nil;
-				WQT_GroupSearch:Hide();
-				WQT_GroupSearch:Show();
-			end
-		end)
-	end
+	
 	-- Hook hiding of official pins if we replace them with our own
 	local mapWQProvider = WQT_Utils:GetMapWQProvider();
 	hooksecurefunc(mapWQProvider, "RefreshAllData", function() 
@@ -2393,53 +2301,6 @@ function WQT_CoreMixin:FilterClearButtonOnClick()
 	WQT_QuestScrollFrame:UpdateQuestList();
 end
 
-function WQT_CoreMixin:SearchGroup(questInfo)
-	local id, title;
-	if (type(questInfo) == "number") then
-		id = questInfo;
-	else
-		id = questInfo.questID;
-	end
-	title = C_TaskQuest.GetQuestInfoByQuestID(id);
-	
-	WQT_GroupSearch:Hide();
-	LFGListUtil_FindQuestGroup(id);
-	
-	-- If we can't automatically make a group, show a message on what the player should type
-	if (not C_LFGList.CanCreateQuestGroup(id)) then
-		WQT_GroupSearch:SetParent(LFGListFrame.SearchPanel.SearchBox);
-		WQT_GroupSearch:SetFrameLevel(LFGListFrame.SearchPanel.SearchBox:GetFrameLevel()+5);
-		WQT_GroupSearch:ClearAllPoints();
-		WQT_GroupSearch:SetPoint("TOPLEFT", LFGListFrame.SearchPanel.SearchBox, "BOTTOMLEFT", -2, -3);
-		WQT_GroupSearch:SetPoint("RIGHT", LFGListFrame.SearchPanel.SearchBox, "RIGHT", -30, 0);
-	
-		WQT_GroupSearch.Text:SetText(_L["FORMAT_GROUP_SEARCH"]:format(id, title));
-		WQT_GroupSearch.downArrow = false;
-		WQT_GroupSearch:Hide();
-		WQT_GroupSearch:Show();
-		
-		WQT_GroupSearch.questID = id;
-		WQT_GroupSearch.title = title;
-	end
-end
-
--- Only allow LFG for quests that would actually allow it
-function WQT_CoreMixin:ShouldAllowLFG(questInfo)
-	if (not questInfo) then return false; end
-
-	local tagInfo;
-	if (type(questInfo) == "number") then
-		tagInfo = C_QuestLog.GetQuestTagInfo(questInfo);
-	else
-		if (questInfo.isDaily) then 
-			return false; 
-		end
-		tagInfo = questInfo:GetTagInfo();
-	end
-	
-	return tagInfo and tagInfo.worldQuestType and not (tagInfo.worldQuestType == Enum.QuestTagType.PetBattle or tagInfo.worldQuestType == Enum.QuestTagType.Dungeon or tagInfo.worldQuestType == Enum.QuestTagType.Progession or tagInfo.worldQuestType == Enum.QuestTagType.Raid);
-end
-
 function WQT_CoreMixin:UnhookEvent(event, func)
 	local list = self.eventHooks[event];
 	if (list) then
@@ -2487,30 +2348,6 @@ function WQT_CoreMixin:ADDON_LOADED(loaded)
 			external:Init(WQT_Utils);
 			WQT:debugPrint("External", external:GetName(), "delayed load.");
 			WQT.loadableExternals[loaded] = nil;
-		end
-	end
-end
-
-function WQT_CoreMixin:PLAYER_REGEN_DISABLED()
-	-- Custom LFG buttons disabled during combat, because the LFG frame is protected
-	if ObjectiveTrackerBlocksFrame == nil then
-		return
-	end
-	for k, block in ipairs({ObjectiveTrackerBlocksFrame:GetChildren()}) do
-		if (block.WQTButton) then
-			block.WQTButton:SetEnabled(false);
-		end
-	end
-end
-
-function WQT_CoreMixin:PLAYER_REGEN_ENABLED()
-	-- Custom LFG buttons disabled during combat, because the LFG frame is protected
-	if ObjectiveTrackerBlocksFrame == nil then
-		return
-	end
-	for k, block in ipairs({ObjectiveTrackerBlocksFrame:GetChildren()}) do
-		if (block.WQTButton) then
-			block.WQTButton:SetEnabled(true);
 		end
 	end
 end

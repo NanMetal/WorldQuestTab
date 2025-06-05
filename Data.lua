@@ -799,14 +799,7 @@ _V["SETTING_LIST"] = {
 				WQT_QuestScrollFrame:DisplayQuestList();
 			end
 			,["getValueFunc"] = function() return WQT.settings.general.preciseFilters end
-			}	
-	,{["template"] = "WQT_SettingCheckboxTemplate", ["categoryID"] = "GENERAL", ["label"] = _L["LFG_BUTTONS"], ["tooltip"] = _L["LFG_BUTTONS_TT"]
-			, ["valueChangedFunc"] = function(value) 
-				WQT.settings.general.useLFGButtons = value;
-			end
-			,["getValueFunc"] = function() return WQT.settings.general.useLFGButtons end
-			}	
-		
+			}
 	,{["template"] = "WQT_SettingCheckboxTemplate", ["categoryID"] = "GENERAL", ["label"] = _L["QUEST_COUNTER"], ["tooltip"] = _L["QUEST_COUNTER_TT"]
 			, ["valueChangedFunc"] = function(value) 
 				WQT.settings.general.questCounter = value;
@@ -1655,6 +1648,15 @@ end
 
 -- This is just easier to maintain than changing the entire string every time
 _V["PATCH_NOTES"] = {
+		{["version"] = "11.1.5.1",
+			["fixes"] = {
+				"Fixed some missing behaviour while hovering quests on the world quest list.",
+			},
+			["changes"] = {
+				"Removed the LFG Button feature completely as you can't create groups anymore with AddOns.",
+				"Changed world/flight map frame to use NineSlice instead of deprecated backdrop.",
+			},
+		},
 		{["version"] = "11.1.5",
 			["intro"] = { "Update for 11.1.5" },
 			["fixes"] = {

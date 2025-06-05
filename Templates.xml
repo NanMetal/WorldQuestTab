@@ -187,26 +187,16 @@
 		</Scripts>
 	</Button>
 	
-	<Frame name="WQT_ContainerTemplate" virtual="true" inherits="BackdropTemplate">
+	<Frame name="WQT_ContainerTemplate" virtual="true">
 		<Size x="345" y="518"/>
-		<Scripts>
-			<OnLoad>
-				self:SetBackdrop({
-					edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-					tile = true,
-					tileEdge = true,
-					edgeSize = 12,
-					tileSize = 16,
-					insets = { left = 0, right = 0, top = 5, bottom = 5 },
-				});
-				self:ApplyBackdrop();
-			</OnLoad>
-		</Scripts>
 		<Frames>
-			<Frame parentKey="Inset" inherits="ShadowOverlaySmallTemplate">
+			<Frame parentKey="NineSlice" inherits="NineSlicePanelTemplate" useParentLevel="true" setAllPoints="true">
+				<KeyValues>
+					<KeyValue key="layoutType" value="TooltipGluesLayout" type="string"/>
+				</KeyValues>
 				<Anchors>
-					<Anchor point="TOPLEFT" x="4" y="-4"/>
-					<Anchor point="BOTTOMRIGHT" x="-4" y="4"/>
+					<Anchor point="TOPLEFT" x="-5" y="3"/>
+					<Anchor point="BOTTOMRIGHT" relativeKey="$parent.Background" relativePoint="BOTTOMRIGHT" x="3" y="-5"/>
 				</Anchors>
 			</Frame>
 		</Frames>
